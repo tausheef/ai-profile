@@ -12,7 +12,7 @@ const app = express();
 
 // ✅ CORS (secure + cookies support)
 app.use(cors({
-  origin: ['http://localhost:3000', 'https://yourdomain.com'], // change this
+  origin: ['http://localhost:3000', 'https://ai-profile-85cq.onrender.com/'], // change this
   methods: ['GET', 'POST', 'PUT', 'DELETE'],
   credentials: true
 }));
@@ -38,7 +38,7 @@ app.get('/health', (req, res) => {
 if (process.env.NODE_ENV === 'production') {
   app.use(express.static(path.join(__dirname, '../frontend/dist')));
 
-  app.get('*', (req, res) => {
+  app.use((req, res) => {
     res.sendFile(path.join(__dirname, '../frontend/dist/index.html'));
   });
 }
