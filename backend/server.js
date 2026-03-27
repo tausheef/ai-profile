@@ -10,15 +10,19 @@ const profileRoutes = require('./routes/profile');
 
 const app = express();
 
-// Middleware
+// ✅ CORS (secure + cookies support)
 app.use(cors({
-  origin: '*',
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization']
+  origin: ['http://localhost:3000', 'https://yourdomain.com'], // change this
+  methods: ['GET', 'POST', 'PUT', 'DELETE'],
+  credentials: true
 }));
+
+// Middleware
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
+
+// Static folder (keep only one main static)
 app.use(express.static(path.join(__dirname, 'public')));
 
 // Routes
@@ -30,18 +34,28 @@ app.get('/health', (req, res) => {
   res.json({ status: 'OK', message: 'AI Recruiter API is running' });
 });
 
-// Production frontend serving (Express 5 compatible)
+// ✅ Production frontend serving
 if (process.env.NODE_ENV === 'production') {
   app.use(express.static(path.join(__dirname, '../frontend/dist')));
-  app.use((req, res) => {
+
+  app.get('*', (req, res) => {
     res.sendFile(path.join(__dirname, '../frontend/dist/index.html'));
   });
 }
 
-// Connect to MongoDB
-mongoose.connect(process.env.MONGODB_URI)
-  .then(() => console.log('✅ MongoDB connected'))
-  .catch(err => console.error('❌ MongoDB connection error:', err));
+// ✅ MongoDB connection (improved)
+mongoose.connect(process.env.MONGODB_URI, {
+  useNewUrlParser: true,
+  useUnifiedTopology: true
+})
+.then(() => console.log('✅ MongoDB connected'))
+.catch(err => console.error('❌ MongoDB connection error:', err));
+
+// ✅ Global error handler (IMPORTANT)
+app.use((err, req, res, next) => {
+  console.error(err.stack);
+  res.status(500).json({ message: 'Something went wrong' });
+});
 
 // Start server
 const PORT = process.env.PORT || 8080;
