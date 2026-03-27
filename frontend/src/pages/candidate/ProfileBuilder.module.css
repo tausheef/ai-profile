@@ -1,0 +1,44 @@
+.page { display:flex; min-height:100vh; background:var(--bg); }
+.sidebar { width:260px; min-height:100vh; background:var(--bg-card); border-right:1px solid var(--border); display:flex; flex-direction:column; padding:24px 16px; position:sticky; top:0; }
+.sidebarLogo { display:flex; align-items:center; gap:8px; font-family:var(--font-display); font-size:18px; font-weight:800; color:var(--text-primary); margin-bottom:32px; padding:0 8px; }
+.progressSection { display:flex; flex-direction:column; align-items:center; margin-bottom:32px; }
+.progressRing { position:relative; width:80px; height:80px; }
+.progressRing svg { width:80px; height:80px; }
+.progressNum { position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); font-family:var(--font-display); font-size:16px; font-weight:700; }
+.progressLabel { font-size:12px; color:var(--text-muted); margin-top:8px; text-transform:uppercase; letter-spacing:0.05em; }
+.steps { display:flex; flex-direction:column; gap:4px; flex:1; }
+.stepBtn { display:flex; align-items:center; gap:10px; padding:12px; border:none; background:transparent; color:var(--text-secondary); font-family:var(--font-body); font-size:14px; cursor:pointer; border-radius:var(--radius); transition:all 0.2s; width:100%; text-align:left; }
+.stepBtn:hover { background:var(--bg-elevated); color:var(--text-primary); }
+.stepActive { background:var(--accent-glow) !important; color:var(--accent) !important; }
+.stepDone { color:var(--accent3) !important; }
+.stepIcon { display:flex; align-items:center; }
+.sidebarFooter { margin-top:auto; padding-top:16px; border-top:1px solid var(--border); }
+.main { flex:1; display:flex; flex-direction:column; max-height:100vh; overflow-y:auto; }
+.header { display:flex; align-items:center; justify-content:space-between; padding:24px 32px; border-bottom:1px solid var(--border); position:sticky; top:0; background:var(--bg); z-index:10; }
+.stepTitle { font-size:24px; font-weight:800; }
+.stepSub { font-size:13px; color:var(--text-muted); margin-top:2px; }
+.content { flex:1; padding:32px; }
+.stepContent { display:flex; flex-direction:column; gap:24px; max-width:680px; animation:fadeUp 0.3s ease; }
+.formGrid { display:grid; grid-template-columns:1fr 1fr; gap:16px; }
+.formFull { grid-column:1/-1; }
+.aiCard { background:var(--bg-elevated); border:1px solid rgba(108,99,255,0.2); border-radius:var(--radius-lg); padding:20px; display:flex; flex-direction:column; gap:12px; }
+.aiCardHeader { display:flex; align-items:center; gap:8px; font-family:var(--font-display); font-size:14px; font-weight:600; color:var(--accent); }
+.aiBtn { display:inline-flex; align-items:center; gap:8px; padding:10px 20px; background:var(--accent); color:white; border:none; border-radius:var(--radius); font-family:var(--font-display); font-size:14px; font-weight:600; cursor:pointer; transition:all 0.2s; align-self:flex-start; }
+.aiBtn:hover { background:var(--accent-hover); }
+.aiBtn:disabled { opacity:0.6; cursor:not-allowed; }
+.itemList { display:flex; flex-direction:column; gap:12px; }
+.itemCard { background:var(--bg-card); border:1px solid var(--border); border-radius:var(--radius-lg); padding:20px; }
+.itemCardHeader { display:flex; align-items:flex-start; justify-content:space-between; margin-bottom:8px; }
+.itemTitle { font-family:var(--font-display); font-size:16px; font-weight:700; }
+.itemSub { font-size:13px; color:var(--text-secondary); margin-top:2px; }
+.deleteBtn { background:none; border:none; color:var(--text-muted); cursor:pointer; padding:4px; border-radius:6px; display:flex; align-items:center; transition:color 0.2s; }
+.deleteBtn:hover { color:var(--accent2); }
+.highlights { list-style:none; padding:0; margin-top:8px; display:flex; flex-direction:column; gap:4px; }
+.highlights li { font-size:13px; color:var(--text-secondary); padding-left:12px; position:relative; }
+.highlights li::before { content:'•'; position:absolute; left:0; color:var(--accent); }
+.skillInputRow { display:flex; gap:10px; }
+.skillCloud { display:flex; flex-wrap:wrap; gap:8px; padding:16px; background:var(--bg-elevated); border-radius:var(--radius-lg); min-height:80px; align-content:flex-start; }
+.skillTag { display:inline-flex; align-items:center; gap:6px; padding:6px 12px; background:var(--accent-glow); border:1px solid rgba(108,99,255,0.3); border-radius:100px; font-size:13px; color:var(--text-primary); }
+.skillRemove { background:none; border:none; color:var(--text-muted); cursor:pointer; font-size:16px; line-height:1; padding:0; display:flex; align-items:center; }
+.skillRemove:hover { color:var(--accent2); }
+.navButtons { display:flex; justify-content:flex-end; gap:12px; padding:24px 32px; border-top:1px solid var(--border); position:sticky; bottom:0; background:var(--bg); }
