@@ -47,8 +47,8 @@ export default function ProfileBuilder() {
     if (isFirstLoad.current) return;
     if (autoSaveTimer.current) clearTimeout(autoSaveTimer.current);
     autoSaveTimer.current = setTimeout(() => {
-      if (profile.fullName) saveProfile(profile);
-    }, 1500);
+      if (profile.fullName && !saving) saveProfile(profile);
+    }, 2000);
     return () => clearTimeout(autoSaveTimer.current);
   }, [profile]);
 
@@ -63,10 +63,11 @@ export default function ProfileBuilder() {
   };
 
   const saveProfile = async (data) => {
+    if (autoSaveTimer.current) clearTimeout(autoSaveTimer.current);
     const payload = data || profile;
     setSaving(true);
     try { await api.put('/profile', payload); }
-    catch (err) { toast.error('Failed to save'); }
+    catch (err) { /* silent fail on background saves */ }
     finally { setSaving(false); }
   };
 
