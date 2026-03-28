@@ -1,19 +1,18 @@
 const CandidateProfile = require('../models/CandidateProfile');
 const aiService = require('../services/aiService');
 
-const calcCompletion = (profile) => {
+const calcScore = (body) => {
   let score = 0;
-  if (profile.fullName) score += 10;
-  if (profile.email) score += 10;
-  if (profile.phone) score += 5;
-  if (profile.location) score += 5;
-  if (profile.summary) score += 15;
-  if (profile.experience?.length > 0) score += 20;
-  if (profile.skills?.length >= 5) score += 15;
-  if (profile.projects?.length > 0) score += 15;
-  if (profile.education?.length > 0) score += 5;
-  profile.completionPercentage = score;
-  profile.isComplete = score >= 85;
+  if (body.fullName) score += 10;
+  if (body.email) score += 10;
+  if (body.phone) score += 5;
+  if (body.location) score += 5;
+  if (body.summary) score += 15;
+  if (body.experience?.length > 0) score += 20;
+  if (body.skills?.length >= 5) score += 15;
+  if (body.projects?.length > 0) score += 15;
+  if (body.education?.length > 0) score += 5;
+  return score;
 };
 
 exports.getProfile = async (req, res) => {
@@ -65,8 +64,12 @@ exports.aiGenerateSummary = async (req, res) => {
       skills: profile.skills,
       education: profile.education
     });
-    profile.summary = summary;
-    await profile.save();
+    // Use findOneAndUpdate to avoid version conflicts
+    await CandidateProfile.findOneAndUpdate(
+      { userId: req.user.id },
+      { $set: { summary } },
+      { new: true }
+    );
     res.json({ success: true, summary });
   } catch (error) {
     res.status(500).json({ error: error.message });
@@ -85,21 +88,21 @@ exports.aiStructureProject = async (req, res) => {
 
 exports.updateProfile = async (req, res) => {
   try {
-    let profile = await CandidateProfile.findOne({ userId: req.user.id });
-    if (!profile) {
-      profile = new CandidateProfile({
-        userId: req.user.id,
-        email: req.user.email,
-        fullName: req.body.fullName || req.user.email.split('@')[0],
-        ...req.body
-      });
-    } else {
-      Object.keys(req.body).forEach(key => {
-        if (req.body[key] !== undefined) profile[key] = req.body[key];
-      });
-    }
-    calcCompletion(profile);
-    await profile.save();
+    const body = req.body;
+    const score = calcScore(body);
+
+    const profile = await CandidateProfile.findOneAndUpdate(
+      { userId: req.user.id },
+      {
+        $set: {
+          ...body,
+          completionPercentage: score,
+          isComplete: score >= 85
+        }
+      },
+      { new: true, upsert: true, runValidators: false }
+    );
+
     res.json({ success: true, profile });
   } catch (error) {
     console.error('updateProfile error:', error.message);
@@ -109,13 +112,9 @@ exports.updateProfile = async (req, res) => {
 
 exports.getAllCandidates = async (req, res) => {
   try {
-    const profiles = await CandidateProfile.find({
-      fullName: { $ne: '' },
-      $or: [
-        { experience: { $exists: true, $not: { $size: 0 } } },
-        { skills: { $exists: true, $not: { $size: 0 } } }
-      ]
-    }).select('-userId').sort({ createdAt: -1 });
+    const profiles = await CandidateProfile.find({ fullName: { $ne: '' } })
+      .select('-userId')
+      .sort({ createdAt: -1 });
     res.json(profiles);
   } catch (error) {
     res.status(500).json({ error: error.message });
