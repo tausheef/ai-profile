@@ -199,6 +199,9 @@ export default function ProfileBuilder() {
             <button className="btn-ghost" style={{ fontSize:'14px', padding:'10px 16px' }} onClick={() => navigate('/my-profile')}>
               <Eye size={16} /> Preview
             </button>
+            <button className={`btn-ghost ${styles.mobileLogout}`} style={{ fontSize:'14px', padding:'10px 16px' }} onClick={() => { logout(); navigate('/'); }}>
+              <LogOut size={16} />
+            </button>
           </div>
         </div>
 

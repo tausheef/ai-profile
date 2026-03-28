@@ -42,6 +42,7 @@
 .skillRemove { background:none; border:none; color:var(--text-muted); cursor:pointer; font-size:16px; line-height:1; padding:0; display:flex; align-items:center; }
 .skillRemove:hover { color:var(--accent2); }
 .navButtons { display:flex; justify-content:flex-end; gap:12px; padding:16px 24px; border-top:1px solid var(--border); position:sticky; bottom:0; background:var(--bg); }
+.mobileLogout { display:none; }
 
 /* Mobile */
 @media (max-width: 768px) {
@@ -61,6 +62,7 @@
   .formFull { grid-column:1; }
   .navButtons { padding:12px 16px; }
   .skillInputRow { flex-direction:column; }
+  .mobileLogout { display:flex !important; }
 }
 
 /* Tablet */
