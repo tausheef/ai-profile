@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Sparkles, User, Briefcase, Code, GraduationCap, Plus, Trash2, Wand2, LogOut, Eye, CheckCircle, ChevronRight } from 'lucide-react';
 import toast from 'react-hot-toast';
@@ -25,8 +25,12 @@ export default function ProfileBuilder() {
   const [saving, setSaving] = useState(false);
   const [completion, setCompletion] = useState(0);
   const [newSkill, setNewSkill] = useState('');
+  const autoSaveTimer = useRef(null);
+  const isFirstLoad = useRef(true);
 
   useEffect(() => { fetchProfile(); }, []);
+
+  // Completion score
   useEffect(() => {
     let score = 0;
     if (profile.fullName) score += 20;
@@ -38,14 +42,30 @@ export default function ProfileBuilder() {
     setCompletion(score);
   }, [profile]);
 
+  // Auto-save debounced on profile change
+  useEffect(() => {
+    if (isFirstLoad.current) return;
+    if (autoSaveTimer.current) clearTimeout(autoSaveTimer.current);
+    autoSaveTimer.current = setTimeout(() => {
+      if (profile.fullName) saveProfile(profile);
+    }, 1500);
+    return () => clearTimeout(autoSaveTimer.current);
+  }, [profile]);
+
   const fetchProfile = async () => {
-    try { const res = await api.get('/profile'); if (res.data) setProfile(p => ({ ...p, ...res.data })); }
-    catch (err) { console.error(err); }
+    try {
+      const res = await api.get('/profile');
+      if (res.data) {
+        setProfile(p => ({ ...p, ...res.data }));
+        isFirstLoad.current = false;
+      }
+    } catch (err) { console.error(err); }
   };
 
-  const saveProfile = async (data = profile) => {
+  const saveProfile = async (data) => {
+    const payload = data || profile;
     setSaving(true);
-    try { await api.put('/profile', data); }
+    try { await api.put('/profile', payload); }
     catch (err) { toast.error('Failed to save'); }
     finally { setSaving(false); }
   };
@@ -55,7 +75,9 @@ export default function ProfileBuilder() {
     setAiLoading(p => ({ ...p, experience: true }));
     try {
       const res = await api.post('/ai/structure-experience', { rawText: rawExperience });
-      setProfile(p => ({ ...p, experience: [...p.experience, res.data.data] }));
+      const updated = { ...profile, experience: [...profile.experience, res.data.data] };
+      setProfile(updated);
+      await saveProfile(updated);
       setRawExperience('');
       toast.success('Experience structured by AI!');
     } catch { toast.error('AI failed, try again'); }
@@ -67,7 +89,9 @@ export default function ProfileBuilder() {
     try {
       const res = await api.post('/ai/suggest-skills', { experience: profile.experience, projects: profile.projects });
       const suggested = res.data.skills.filter(s => !profile.skills.includes(s));
-      setProfile(p => ({ ...p, skills: [...new Set([...p.skills, ...suggested])] }));
+      const updated = { ...profile, skills: [...new Set([...profile.skills, ...suggested])] };
+      setProfile(updated);
+      await saveProfile(updated);
       toast.success(`Added ${suggested.length} AI-suggested skills!`);
     } catch { toast.error('AI failed, try again'); }
     finally { setAiLoading(p => ({ ...p, skills: false })); }
@@ -77,7 +101,9 @@ export default function ProfileBuilder() {
     setAiLoading(p => ({ ...p, summary: true }));
     try {
       const res = await api.post('/ai/generate-summary', {});
-      setProfile(p => ({ ...p, summary: res.data.summary }));
+      const updated = { ...profile, summary: res.data.summary };
+      setProfile(updated);
+      await saveProfile(updated);
       toast.success('Summary generated!');
     } catch { toast.error('AI failed, try again'); }
     finally { setAiLoading(p => ({ ...p, summary: false })); }
@@ -88,7 +114,9 @@ export default function ProfileBuilder() {
     setAiLoading(p => ({ ...p, project: true }));
     try {
       const res = await api.post('/ai/structure-project', { rawText: rawProject });
-      setProfile(p => ({ ...p, projects: [...p.projects, res.data.data] }));
+      const updated = { ...profile, projects: [...profile.projects, res.data.data] };
+      setProfile(updated);
+      await saveProfile(updated);
       setRawProject('');
       toast.success('Project structured by AI!');
     } catch { toast.error('AI failed, try again'); }
@@ -109,8 +137,16 @@ export default function ProfileBuilder() {
   const updateEducation = (i, field, value) => setProfile(p => ({ ...p, education: p.education.map((e, idx) => idx === i ? { ...e, [field]: value } : e) }));
   const removeEducation = (i) => setProfile(p => ({ ...p, education: p.education.filter((_, idx) => idx !== i) }));
 
-  const handleNext = async () => { await saveProfile(); if (step < STEPS.length - 1) setStep(s => s + 1); };
-  const handleFinish = async () => { await saveProfile(); toast.success('Profile saved!'); navigate('/my-profile'); };
+  const handleNext = async () => {
+    await saveProfile(profile);
+    if (step < STEPS.length - 1) setStep(s => s + 1);
+  };
+
+  const handleFinish = async () => {
+    await saveProfile(profile);
+    toast.success('Profile saved!');
+    navigate('/my-profile');
+  };
 
   const currentStep = STEPS[step];
 
